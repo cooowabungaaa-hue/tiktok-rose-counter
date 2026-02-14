@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TikTok Live Rose Counter</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary: #ff0050;
+            --secondary: #00f2ea;
+            --bg: #0a0a0b;
+            --card-bg: #16171d;
+            --text: #ffffff;
+            --text-dim: #a0a0a5;
+            --rose: #ff4d6d;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(255, 0, 80, 0.3);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .controls-row {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .input-group {
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            flex: 1;
+        }
+
+        input {
+            flex: 1;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+        }
+
+        button {
+            padding: 12px 24px;
+            background: var(--primary);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        button.secondary-btn {
+            background: var(--secondary);
+            color: var(--bg);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .status-offline {
+            background: #444;
+            color: #ccc;
+        }
+
+        .status-online {
+            background: #4caf50;
+            color: white;
+            animation: pulse 2s infinite;
+        }
+
+        .status-error {
+            background: #f44336;
+            color: white;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.7;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 16px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-label {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3rem;
+            font-weight: bold;
+        }
+
+        .unique-value {
+            color: var(--secondary);
+        }
+
+        .total-value {
+            color: var(--rose);
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .combined-stat {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+            position: relative;
+        }
+
+        .stat-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .stat-divider {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3rem;
+            color: var(--text-dim);
+            font-weight: bold;
+            transform: translateY(10px);
+            /* Align with numbers visually */
+        }
+
+        .feed-panel {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            max-height: 600px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .feed-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 10px;
+        }
+
+        .rose-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .unique-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(-20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid var(--primary);
+        }
+
+        .unique-item .avatar {
+            border-color: var(--secondary);
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .username {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .user-id {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+
+        .gift-tag {
+            font-size: 0.8rem;
+            color: var(--rose);
+        }
+
+        .gift-count {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: bold;
+            color: var(--rose);
+            background: rgba(255, 77, 109, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+
+        .sequence-number {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            color: var(--secondary);
+            width: 90px;
+            text-align: right;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>ROSE COUNTER</h1>
+
+    <div class="container">
+        <div class="controls-row">
+            <div class="input-group">
+                <input type="text" id="username" placeholder="TikTok Username (e.g. @tiktok)" spellcheck="false">
+                <button id="connectBtn">
+                    <span>CONNECT</span>
+                </button>
+            </div>
+            <div class="input-group">
+                <input type="number" id="targetGoal" placeholder="Goal # (e.g. 100)" value="100">
+                <button id="setTargetBtn" class="secondary-btn">
+                    <span>SET GOAL</span>
+                </button>
+            </div>
+        </div>
+
+        <div id="statusArea" style="text-align: center;">
+            <span id="statusBadge" class="status-badge status-offline">OFFLINE</span>
+            <div id="connectionTarget" style="margin-top: 10px; color: var(--text-dim); font-size: 0.9rem;">
+                Not Connected
+            </div>
+        </div>
+
+        <div class="content-grid">
+            <!-- Left Column: Unique Stats + Unique List -->
+            <div class="column">
+                <div class="stat-card combined-stat">
+                    <div class="stat-group">
+                        <div class="stat-label">Unique</div>
+                        <div id="uniqueCount" class="stat-value unique-value">0</div>
+                    </div>
+                    <div class="stat-divider">/</div>
+                    <div class="stat-group">
+                        <div class="stat-label">Remaining</div>
+                        <div id="remainingCount" class="stat-value" style="color: var(--primary);">100</div>
+                    </div>
+                </div>
+
+                <div class="feed-panel">
+                    <div class="feed-title" style="justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="color: var(--secondary);">✨</span> UNIQUE LIST
+                        </div>
+                        <button id="downloadCsvBtn" class="secondary-btn" style="padding: 4px 12px; font-size: 0.8rem;">
+                            <span>CSV</span>
+                        </button>
+                        <button id="copyForSheetsBtn" class="secondary-btn"
+                            style="padding: 4px 12px; font-size: 0.8rem; background-color: #0F9D58; color: white;">
+                            <span>COPY</span>
+                        </button>
+                    </div>
+                    <div id="uniqueList">
+                        <!-- Unique items will appear here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Total Stats + Live Feed -->
+            <div class="column">
+                <div class="stat-card">
+                    <div class="stat-label">Total Roses</div>
+                    <div id="totalCount" class="stat-value total-value">0</div>
+                </div>
+
+                <div class="feed-panel">
+                    <div class="feed-title">
+                        <span>🌹</span> LIVE FEED
+                    </div>
+                    <div id="roseFeed">
+                        <!-- Rose items will appear here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const connectBtn = document.getElementById('connectBtn');
+        const usernameInput = document.getElementById('username');
+        const setTargetBtn = document.getElementById('setTargetBtn');
+        const targetGoalInput = document.getElementById('targetGoal');
+        const statusBadge = document.getElementById('statusBadge');
+        const uniqueCountEl = document.getElementById('uniqueCount');
+        const totalCountEl = document.getElementById('totalCount');
+        const remainingCountEl = document.getElementById('remainingCount');
+        const roseFeed = document.getElementById('roseFeed');
+        const uniqueList = document.getElementById('uniqueList');
+        const downloadCsvBtn = document.getElementById('downloadCsvBtn');
+        const copyForSheetsBtn = document.getElementById('copyForSheetsBtn');
+
+        const connectionTarget = document.getElementById('connectionTarget');
+
+        let isConnectState = true;
+        let currentUniqueList = [];
+
+        connectBtn.addEventListener('click', () => {
+            // ... existing connect logic ...
+            if (isConnectState) {
+                const username = usernameInput.value.trim().replace('@', '');
+                if (username) {
+                    socket.emit('connectToLive', username);
+                    statusBadge.textContent = 'CONNECTING...';
+                    statusBadge.className = 'status-badge status-offline';
+                    connectionTarget.innerHTML = `Connecting to <span style="color: var(--secondary);">@${username}</span>...`;
+                    connectionTarget.style.color = 'var(--text-dim)';
+                    connectionTarget.dataset.username = username;
+
+                    // Reset UI
+                    roseFeed.innerHTML = '';
+                    totalCountEl.textContent = '0';
+                    uniqueCountEl.textContent = '0';
+                    uniqueList.innerHTML = '';
+                    currentUniqueList = [];
+
+                    connectBtn.disabled = true;
+
+                    const goal = targetGoalInput.value;
+                    if (goal) {
+                        socket.emit('setTarget', goal);
+                    }
+                }
+            } else {
+                // Disconnect logic
+                socket.emit('disconnectFromLive');
+                connectBtn.disabled = true;
+                connectBtn.querySelector('span').textContent = 'DISCONNECTING...';
+            }
+        });
+
+        setTargetBtn.addEventListener('click', () => {
+            const goal = targetGoalInput.value;
+            if (goal) {
+                socket.emit('setTarget', goal);
+                // Visual feedback checkmark or something could be good, but for now simple
+                setTargetBtn.innerHTML = '<span>UPDATED!</span>';
+                setTimeout(() => {
+                    setTargetBtn.innerHTML = '<span>SET GOAL</span>';
+                }, 2000);
+            }
+        });
+
+        // Helper to get Stream Date (handle midnight crossing)
+        function getStreamDate() {
+            const now = new Date();
+            // If before 12:00 PM (noon), assume it belongs to previous day's stream
+            if (now.getHours() < 12) {
+                now.setDate(now.getDate() - 1);
+            }
+            const yyyy = now.getFullYear();
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const dd = String(now.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        }
+
+        // CSV Download Logic
+        downloadCsvBtn.addEventListener('click', () => {
+            if (!currentUniqueList || currentUniqueList.length === 0) {
+                alert('No data to download.');
+                return;
+            }
+
+            const streamDate = getStreamDate();
+            // CSV Header
+            let csvContent = "StreamDate,No.,Nickname,UniqueId\n";
+
+            // CSV Rows
+            currentUniqueList.forEach(user => {
+                const nickname = user.nickname.replace(/"/g, '""'); // Escape quotes
+                csvContent += `${streamDate},${user.sequenceNumber},"${nickname}",${user.uniqueId}\n`;
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            link.setAttribute("download", `unique_rosers_${timestamp}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
+        // Copy for Sheets Logic
+        copyForSheetsBtn.addEventListener('click', () => {
+            if (!currentUniqueList || currentUniqueList.length === 0) {
+                alert('No data to copy.');
+                return;
+            }
+
+            const streamDate = getStreamDate();
+            // TSV Header (Tab Separated)
+            let tsvContent = "StreamDate\tNo.\tNickname\tUniqueId\n";
+
+            // TSV Rows
+            currentUniqueList.forEach(user => {
+                // Sheets handles tabs generally well, but let's be safe with newlines in nicknames if any
+                const nickname = user.nickname.replace(/\t/g, ' ').replace(/\n/g, ' ');
+                tsvContent += `${streamDate}\t${user.sequenceNumber}\t${nickname}\t${user.uniqueId}\n`;
+            });
+
+            navigator.clipboard.writeText(tsvContent).then(() => {
+                const originalText = copyForSheetsBtn.querySelector('span').textContent;
+                copyForSheetsBtn.querySelector('span').textContent = 'COPIED!';
+                setTimeout(() => {
+                    copyForSheetsBtn.querySelector('span').textContent = originalText;
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+                alert('Failed to copy to clipboard.');
+            });
+        });
+
+        socket.on('connectionStatus', (data) => {
+            connectBtn.disabled = false;
+
+            if (data.status === 'connected') {
+                isConnectState = false;
+                connectBtn.querySelector('span').textContent = 'DISCONNECT';
+                connectBtn.style.backgroundColor = '#f44336'; // Red for disconnect
+
+                statusBadge.textContent = 'CONNECTED';
+                statusBadge.className = 'status-badge status-online';
+
+                // Use stored username or data if available
+                // Note: The server sends roomId, we can use that to confirm connection
+                const connectedUser = usernameInput.value.trim().replace('@', '') || 'Unknown';
+                connectionTarget.innerHTML = `Connected to <span style="color: var(--secondary); font-weight: bold;">@${connectedUser}</span>`;
+                connectionTarget.style.color = 'var(--text)';
+
+            } else if (data.status === 'error') {
+                isConnectState = true;
+                connectBtn.querySelector('span').textContent = 'CONNECT';
+                connectBtn.style.backgroundColor = 'var(--primary)'; // Reset color
+
+                statusBadge.textContent = 'ERROR';
+                statusBadge.className = 'status-badge status-error';
+                connectionTarget.textContent = 'Connection Failed';
+                connectionTarget.style.color = 'var(--text-dim)';
+                alert('Connection Error: ' + data.message);
+
+            } else {
+                // Disconnected or Ended
+                isConnectState = true;
+                connectBtn.querySelector('span').textContent = 'CONNECT';
+                connectBtn.style.backgroundColor = 'var(--primary)'; // Reset color
+
+                statusBadge.textContent = data.status.toUpperCase();
+                statusBadge.className = 'status-badge status-offline';
+
+                connectionTarget.textContent = 'Not Connected';
+                connectionTarget.style.color = 'var(--text-dim)';
+            }
+        });
+
+        socket.on('targetUpdated', (data) => {
+            // Re-render unique list
+            if (data.uniqueGifterList) {
+                currentUniqueList = data.uniqueGifterList;
+                renderUniqueList(data.uniqueGifterList);
+            }
+            updateRemaining(data.targetGoal, data.uniqueGifterList ? data.uniqueGifterList.length : 0);
+        });
+
+        socket.on('roseUpdate', (data) => {
+            uniqueCountEl.textContent = data.uniqueCount;
+            totalCountEl.textContent = data.totalCount;
+
+            updateRemaining(data.targetGoal, data.uniqueCount);
+
+            // Live Feed Update
+            const item = document.createElement('div');
+            item.className = 'rose-item';
+            item.innerHTML = `
+                <img src="${data.lastGifter.profilePictureUrl}" class="avatar" alt="avatar">
+                <div class="user-info">
+                    <div class="username">${data.lastGifter.nickname}</div>
+                    <div class="gift-tag">sent Roses!</div>
+                </div>
+                <div class="gift-count">x${data.lastGifter.repeatCount}</div>
+            `;
+            roseFeed.prepend(item);
+            if (roseFeed.children.length > 20) {
+                roseFeed.removeChild(roseFeed.lastChild);
+            }
+
+            // Unique List Update
+            if (data.uniqueGifterList) {
+                currentUniqueList = data.uniqueGifterList;
+                renderUniqueList(data.uniqueGifterList);
+            }
+        });
+
+        function updateRemaining(goal, current) {
+            const rem = Math.max(0, goal - current);
+            remainingCountEl.textContent = rem;
+            if (rem === 0) {
+                remainingCountEl.textContent = "GOAL!";
+                remainingCountEl.style.color = "var(--secondary)";
+            } else {
+                remainingCountEl.style.color = "var(--primary)";
+            }
+        }
+
+        function renderUniqueList(list) {
+            uniqueList.innerHTML = '';
+            // Show in reverse order (newest top) or chronological? 
+            // Usually "List" implies 1, 2, 3... top to bottom.
+            // But for a feed, newest is top.
+            // User asked for "Sequential list" like "No. 300 : User". 
+            // Let's display it 300, 301, 302... top to bottom is logical for a "list", 
+            // but if it's long, you want to see the latest. 
+            // Let's do newest at top (reverse order in display) but keep numbers ascending.
+
+            // Actually, for a "Goal" list, seeing the filling up is cool. 
+            // Let's do Standard Order (Ascending) so 300 is top.
+            // But if we have 1000 users, we want to see the latest added...
+            // Let's stick to Ascending order (oldest top) for now as it's a "List". 
+            // Wait, "Feed" is usually newest top. "List" might be static. 
+            // Let's do Newest Top for now because scrolling to bottom is annoying.
+            // Or maybe Newest Top matches the Live Feed behavior.
+
+            // User said: "sequential list... fill up the username against the sequence number"
+            // Let's display in descending order of sequence number so the latest (highest number) is at top.
+
+            const reversedList = [...list].reverse();
+
+            reversedList.forEach(user => {
+                const item = document.createElement('div');
+                item.className = 'unique-item';
+                const paddedNumber = String(user.sequenceNumber).padStart(3, '0');
+                item.innerHTML = `
+                    <div class="sequence-number">No.${paddedNumber}</div>
+                    <img src="${user.profilePictureUrl}" class="avatar" alt="avatar">
+                    <div class="user-info">
+                        <div class="username">${user.nickname}</div>
+                        <div class="user-id">@${user.uniqueId}</div>
+                    </div>
+                `;
+                uniqueList.appendChild(item);
+            });
+        }
+    </script>
+</body>
+
+</html>
