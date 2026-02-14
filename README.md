@@ -2,9 +2,9 @@
 
 A real-time Rose, Unique User, and Goal counter for TikTok Live streams.
 
-> 🔰 **[はじめて使う方はこちら（セットアップガイド）](https://htmlpreview.github.io/?https://github.com/USERNAME/REPO/blob/main/docs/index.html)**
+> 🔰 **[はじめて使う方はこちら（セットアップガイド）](https://cooowabungaaa-hue.github.io/tiktok-rose-counter/docs/)**
 > 
-> (※上記リンクは、GitHubにアップロードした後に有効になります。お友達にはこのリンクを送ってあげてください)
+> (お友達にはこのリンクを送ってあげてください)
 
 ---
 
