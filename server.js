@@ -43,6 +43,14 @@ io.on('connection', (socket) => {
         }
     });
 
+    // Send current state to newly connected client
+    socket.emit('currentState', {
+        uniqueCount: uniqueRoseGifters.size,
+        totalCount: roseCount,
+        uniqueGifterList: uniqueGifterList,
+        targetGoal: targetGoal
+    });
+
     socket.on('disconnectFromLive', () => {
         if (tiktokLiveConnection) {
             console.log('Client requested disconnect from TikTok Live');

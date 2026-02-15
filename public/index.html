@@ -789,7 +789,20 @@
                 currentUniqueList = data.uniqueGifterList;
                 renderUniqueList(data.uniqueGifterList);
             }
-            updateRemaining(data.targetGoal, data.uniqueGifterList ? data.uniqueGifterList.length : 0);
+            // Update remaining calculation only if target changed
+            const currentCount = currentUniqueList ? currentUniqueList.length : 0;
+            updateRemaining(data.targetGoal, currentCount);
+        });
+
+        socket.on('currentState', (data) => {
+            uniqueCountEl.textContent = data.uniqueCount;
+            totalCountEl.textContent = data.totalCount;
+
+            if (data.uniqueGifterList) {
+                currentUniqueList = data.uniqueGifterList;
+                renderUniqueList(data.uniqueGifterList);
+            }
+            updateRemaining(data.targetGoal, data.uniqueCount);
         });
 
         socket.on('roseUpdate', (data) => {
