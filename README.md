@@ -23,40 +23,40 @@ Designed to help streamers track rose gifts and unique gifters during gamified s
 *   **Connection Management**: Connect/Disconnect from streams without restarting the server.
 *   **Automatic Stream Date**: Handles streams crossing midnight (before 12 PM counts as previous day).
 
-## Prerequisites
+## セットアップ方法 (選べる2つのパターン)
 
-*   **Node.js**: You must have Node.js installed (v14 or higher recommended).
-    *   [Download Node.js](https://nodejs.org/)
+ご利用の環境に合わせて、以下のいずれかの方法で開始してください。
 
-## Installation
+### 🌹 パターンA：しっかり使いたい方 (推奨)
+ご自身のPCに Node.js をインストールして使用します。動作が安定し、起動も速くなります。
+1.  **Node.js をインストール**: [公式サイト](https://nodejs.org/)から LTS版をダウンロードしてインストールしてください。
+2.  **起動**: フォルダ内の **`start.bat`** をダブルクリックしてください。
+    *   初回のみ、必要な部品（library）が自動でインストールされます。
+    *   準備ができたらブラウザが自動で立ち上がります。
 
-1.  **Clone or Download** this repository.
-2.  Open a terminal/command prompt in the project folder.
-3.  Install dependencies:
-    ```bash
-    npm install
-    ```
+### 🌹 パターンB：インストールができない・面倒な方
+職場のPCなど、管理権限がなく Node.js がインストールできない場合でも利用可能です。
+1.  **直接起動**: Node.js のインストールをスキップして、そのまま **`start.bat`** をダブルクリックしてください。
+2.  **自動準備**: `start.bat` が Node.js 本体のダウンロードから部品の準備まで、**すべて裏で自動で完了させます。**
+    *   初回セットアップに数分かかる場合がありますが、黒い画面（cmd）への文字入力は一切不要です。起動するまでそのままお待ちください。
 
-## Usage
+---
 
-1.  **Start the Server**:
-    Double-click `start.bat` (if on Windows) or run:
-    ```bash
-    node server.js
-    ```
-2.  **Open in Browser**:
-    Go to `http://localhost:3000`
-3.  **Connect**:
-    *   Enter your TikTok `@username`.
-    *   Click **CONNECT**.
-4.  **Set Goal**:
-    *   Enter your target number in the "Goal #" box (default 100).
-    *   Click **SET GOAL**.
+## 使い方
 
-## Exporting Data
+1.  **ブラウザで確認**: サーバーが起動すると `http://localhost:3000` が開きます。
+2.  **TikTok IDを入力**: 配信者のユーザー名（@マークなし）を入力して「CONNECT」をクリックします。
+3.  **目標設定**: 「Goal #」に目標数（例: 200）を入力して「SET GOAL」をクリックします。
+4.  **リアルタイム集計**: バラが投げられるたびに、ユニークユーザー数がカウントされていきます。
 
-*   **CSV**: Click the `CSV` button in the Unique List header to download.
-*   **Google Sheets**: Click the `COPY` button (green) to copy data. Paste simply into a spreadsheet (Cell A1).
+---
+
+## データの書き出し
+*   **CSV**: 「Unique List」のヘッダーにある `CSV` ボタンで全データを保存できます。
+*   **スプレッドシート**: 緑色の `COPY` ボタンを押すと、そのまま Excel や Google スプレッドシートに貼り付けられる形式でコピーされます。
+
+## 友人に共有する場合
+「とにかく `start.bat` をダブルクリックして待つだけでOK」と伝えて、このリポジトリのリンクやZIPファイルを送ってあげてください。
 
 ## Sharing with Friends
 
