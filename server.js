@@ -185,7 +185,7 @@ server.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
     // Auto-open browser
     const url = `http://localhost:${PORT}`;
-    const command = process.platform === 'win32' ? `start "" "${url}"` : `open "${url}"`; // Win32 or Mac (linux needs xdg-open)
+    const command = process.platform === 'win32' ? `explorer "${url}"` : `open "${url}"`; // Explorer is more reliable for hidden process
 
     exec(command, (err) => {
         if (err) {
