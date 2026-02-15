@@ -181,10 +181,10 @@ const { exec } = require('child_process');
 
 // ... (existing code)
 
-server.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+server.listen(PORT, '127.0.0.1', () => {
+    console.log(`Server is running on http://127.0.0.1:${PORT}`);
     // Auto-open browser
-    const url = `http://localhost:${PORT}`;
+    const url = `http://127.0.0.1:${PORT}`;
     const command = process.platform === 'win32' ? `explorer "${url}"` : `open "${url}"`; // Explorer is more reliable for hidden process
 
     exec(command, (err) => {
