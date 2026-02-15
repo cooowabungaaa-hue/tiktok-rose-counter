@@ -393,17 +393,21 @@
                 </div>
             </div>
 
-            <!-- Box 3: Quit -->
-            <div class="input-group" style="flex: 0.8; min-width: 150px; display: flex; flex-direction: column;">
-                <div style="display: flex; align-items: center; justify-content: center; width: 100%;">
+            <!-- Box 3: Quit & Reset -->
+            <div class="input-group" style="flex: 1; min-width: 180px; display: flex; flex-direction: column;">
+                <div style="display: flex; align-items: center; justify-content: center; width: 100%; gap: 5px;">
+                    <button id="resetBtn"
+                        style="background-color: #555; font-size: 0.7rem; height: 42px; justify-content: center; flex: 1;">
+                        <span>↻ RESET</span>
+                    </button>
                     <button id="quitBtn"
-                        style="background-color: #333; font-size: 0.8rem; height: 42px; justify-content: center; width: 100%;">
-                        <span>❌ QUIT APP</span>
+                        style="background-color: #333; font-size: 0.7rem; height: 42px; justify-content: center; flex: 1;">
+                        <span>❌ QUIT</span>
                     </button>
                 </div>
                 <div
                     style="font-size: 0.8rem; color: var(--text-dim); text-align: center; margin-top: 8px; display: flex; align-items: center; justify-content: center;">
-                    <span style="opacity: 0.7;">Close Session</span>
+                    <span style="opacity: 0.7;">Session Controls</span>
                 </div>
             </div>
         </div>
@@ -490,6 +494,15 @@
         // So here I add the const and listener.
 
         const quitBtn = document.getElementById('quitBtn');
+        const resetBtn = document.getElementById('resetBtn');
+
+        resetBtn.addEventListener('click', () => {
+            if (confirm('【注意】\n現在のセッションデータをリセットしますか？\n（バックアップは自動で保存されます）\n\n※新しい配信を始める時だけ押してください。')) {
+                socket.emit('resetSession');
+                // Feedback
+                alert('セッションをリセットしました。\n新しい配信を開始できます。');
+            }
+        });
 
         quitBtn.addEventListener('click', () => {
             if (confirm('Are you sure you want to quit the application?')) {

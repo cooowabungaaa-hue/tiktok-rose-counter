@@ -58,12 +58,39 @@ io.on('connection', (socket) => {
         shutdownTimer = null;
     }
 
-    socket.on('setTarget', (goalNumber) => {
-        const num = parseInt(goalNumber, 10);
-        if (!isNaN(num)) {
-            targetGoal = num;
-            io.emit('targetUpdated', { targetGoal, uniqueGifterList });
+    // Manual Reset for same-user streams
+    socket.on('resetSession', () => {
+        console.log('Manual session reset requested.');
+
+        // Force backup before clearing
+        if (uniqueGifterList.length > 0) {
+            const date = new Date();
+            const filename = `MANUAL_BACKUP_${lastConnectedUsername || 'unknown'}_${date.getTime()}.csv`;
+            const filePath = path.join(backupDir, filename);
+            let csvContent = "Timestamp,Sequence,Nickname,UniqueId,GiftCount\n";
+            uniqueGifterList.forEach(user => {
+                csvContent += `${date.toISOString()},${user.sequenceNumber},"${user.nickname}",${user.uniqueId},1\n`;
+            });
+            fs.writeFileSync(filePath, csvContent);
         }
+
+        uniqueRoseGifters.clear();
+        roseCount = 0;
+        streakTracker.clear();
+        processedMsgIds.clear();
+        uniqueGifterList = [];
+
+        io.emit('roseUpdate', {
+            uniqueCount: 0,
+            totalCount: 0,
+            uniqueGifterList: [],
+            targetGoal: targetGoal,
+            lastGifter: { nickname: '', repeatCount: 0, profilePictureUrl: '' } // Dummy
+        });
+        io.emit('connectionStatus', { status: 'disconnected' }); // Optional, or keep connected? Let's just update stats.
+        // Actually, better to stay connected but zeroed out.
+        // Let's re-emit targetUpdated to clear list on client
+        io.emit('targetUpdated', { targetGoal, uniqueGifterList: [] });
     });
 
     // Send current state to newly connected client
