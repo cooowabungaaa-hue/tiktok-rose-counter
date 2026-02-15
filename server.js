@@ -177,6 +177,14 @@ app.get('/shutdown', (req, res) => {
     }, 1000);
 });
 
+const { exec } = require('child_process');
+
+// ... (existing code)
+
 server.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
+    // Auto-open browser
+    exec('start http://localhost:3000', (err) => {
+        if (err) console.error('Failed to open browser:', err);
+    });
 });
