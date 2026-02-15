@@ -184,7 +184,13 @@ const { exec } = require('child_process');
 server.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
     // Auto-open browser
-    exec('start http://localhost:3000', (err) => {
-        if (err) console.error('Failed to open browser:', err);
+    const url = `http://localhost:${PORT}`;
+    const command = process.platform === 'win32' ? `start "" "${url}"` : `open "${url}"`; // Win32 or Mac (linux needs xdg-open)
+
+    exec(command, (err) => {
+        if (err) {
+            console.error('Failed to open browser:', err);
+            console.log(`Please open ${url} manually.`);
+        }
     });
 });
