@@ -1,4 +1,5 @@
 @echo off
+SET PATH=%~dp0node-bin;%PATH%
 echo ---------------------------------------------------
 echo 🐛 Debug Mode - TikTok Rose Counter
 echo ---------------------------------------------------

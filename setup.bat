@@ -1,5 +1,5 @@
 @echo off
-chcp 65001 >nul
+SET PATH=%~dp0node-bin;%PATH%
 echo ---------------------------------------------------
 echo 🌹 TikTok Rose Counter Setter-upper 🌹
 echo ---------------------------------------------------
