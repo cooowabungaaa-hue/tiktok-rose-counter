@@ -241,7 +241,10 @@
             border-radius: 12px;
             padding: 16px;
             border: 1px solid rgba(255, 255, 255, 0.05);
-            max-height: 550px;
+            /* max-height: 550px; Removed fixed height */
+            height: calc(100vh - 240px);
+            /* Fill remaining space */
+            min-height: 400px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
