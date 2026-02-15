@@ -352,14 +352,16 @@
     <h1>ROSE COUNTER</h1>
 
     <div class="container">
-        <div class="controls-row">
-            <div class="input-group">
-                <div style="display: flex; flex-direction: column; gap: 4px; flex: 1;">
+        <div class="controls-row" style="align-items: stretch;">
+            <!-- Box 1: Account -->
+            <div class="input-group" style="flex: 1;">
+                <div style="display: flex; flex-direction: column; gap: 8px; flex: 1; justify-content: space-between;">
                     <div style="display: flex; gap: 8px; align-items: center;">
                         <input type="text" id="username" placeholder="TikTok Username" spellcheck="false">
                         <button id="connectBtn"><span>CONNECT</span></button>
                     </div>
-                    <div id="statusArea" style="display: flex; align-items: center; gap: 10px; font-size: 0.85rem;">
+                    <div id="statusArea"
+                        style="display: flex; align-items: center; gap: 10px; font-size: 0.8rem; min-height: 20px;">
                         <span id="statusBadge" class="status-badge status-offline">OFFLINE</span>
                         <div id="connectionTarget"
                             style="color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
@@ -367,15 +369,35 @@
                     </div>
                 </div>
             </div>
-            <div class="input-group" style="flex: 0.6; height: fit-content; align-self: flex-start;">
-                <input type="number" id="targetGoal" placeholder="Goal" value="100">
-                <button id="setTargetBtn" class="secondary-btn"><span>SET GOAL</span></button>
+
+            <!-- Box 2: Goal -->
+            <div class="input-group" style="flex: 0.7;">
+                <div style="display: flex; flex-direction: column; gap: 8px; flex: 1; justify-content: space-between;">
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <input type="number" id="targetGoal" placeholder="Goal" value="100">
+                        <button id="setTargetBtn" class="secondary-btn"><span>SET GOAL</span></button>
+                    </div>
+                    <div
+                        style="font-size: 0.8rem; color: var(--text-dim); min-height: 20px; display: flex; align-items: center;">
+                        <span>Target Mission Settings</span>
+                    </div>
+                </div>
             </div>
-            <div style="display: flex; align-items: center;">
-                <button id="quitBtn"
-                    style="background-color: #333; font-size: 0.75rem; padding: 6px 12px; white-space: nowrap;">
-                    <span>❌ QUIT</span>
-                </button>
+
+            <!-- Box 3: Quit -->
+            <div class="input-group" style="flex: 0.4;">
+                <div style="display: flex; flex-direction: column; gap: 8px; flex: 1; justify-content: space-between;">
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <button id="quitBtn"
+                            style="background-color: #333; font-size: 0.8rem; width: 100%; justify-content: center; height: 38px;">
+                            <span>❌ QUIT APP</span>
+                        </button>
+                    </div>
+                    <div
+                        style="font-size: 0.8rem; color: var(--text-dim); min-height: 20px; display: flex; align-items: center; justify-content: center;">
+                        <span>Session Control</span>
+                    </div>
+                </div>
             </div>
         </div>
 
