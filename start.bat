@@ -6,6 +6,9 @@ echo ========================================
 setlocal
 cd /d %~dp0
 
+:: 0. Clean up existing processes to avoid Port In Use errors
+taskkill /F /IM node.exe >nul 2>&1
+
 :: 1. Environment Setup
 if exist "%~dp0node-bin\node.exe" (
     set "PATH=%~dp0node-bin;%PATH%"
