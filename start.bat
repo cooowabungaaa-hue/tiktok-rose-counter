@@ -33,7 +33,19 @@ if %errorlevel% neq 0 (
 :: 3. Install dependencies
 if not exist "node_modules" (
     echo [INFO] Installing libraries...
-    call npm install express socket.io tiktok-live-connector
+    
+    :: Try to use the correct npm command
+    if exist "node-bin\npm.cmd" (
+        call node-bin\npm.cmd install express socket.io tiktok-live-connector
+    ) else (
+        call npm install express socket.io tiktok-live-connector
+    )
+
+    if %errorlevel% neq 0 (
+        echo [ERROR] Installation failed.
+        pause
+        exit /b 1
+    )
 )
 
 :: 4. Start Server
