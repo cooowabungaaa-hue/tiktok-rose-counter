@@ -355,9 +355,9 @@
     <h1>ROSE COUNTER</h1>
 
     <div class="container">
-        <div class="controls-row">
+        <div class="controls-row" style="display: flex; flex-wrap: wrap; gap: 1rem;">
             <!-- Box 1: Account -->
-            <div class="input-group" style="flex: 2; min-width: 300px;">
+            <div class="input-group" style="flex: 2; min-width: 300px; display: flex; flex-direction: column;">
                 <div style="display: flex; gap: 8px; align-items: center; width: 100%;">
                     <input type="text" id="username" placeholder="TikTok Username" spellcheck="false"
                         style="padding: 10px 14px; flex: 1;">
@@ -374,7 +374,7 @@
             </div>
 
             <!-- Box 2: Goal -->
-            <div class="input-group" style="flex: 1.5; min-width: 250px;">
+            <div class="input-group" style="flex: 1.5; min-width: 250px; display: flex; flex-direction: column;">
                 <div style="display: flex; gap: 8px; align-items: center; width: 100%;">
                     <input type="number" id="targetGoal" placeholder="Goal" value="100"
                         style="padding: 10px 14px; flex: 1;">
@@ -388,7 +388,7 @@
             </div>
 
             <!-- Box 3: Quit -->
-            <div class="input-group" style="flex: 0.8; min-width: 150px;">
+            <div class="input-group" style="flex: 0.8; min-width: 150px; display: flex; flex-direction: column;">
                 <div style="display: flex; align-items: center; justify-content: center; width: 100%;">
                     <button id="quitBtn"
                         style="background-color: #333; font-size: 0.8rem; height: 42px; justify-content: center; width: 100%;">
