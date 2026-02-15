@@ -160,6 +160,23 @@ io.on('connection', (socket) => {
     });
 });
 
+app.get('/shutdown', (req, res) => {
+    console.log('Shutdown requested from client.');
+    res.send('Server is shutting down...');
+
+    // Shut down gracefully
+    server.close(() => {
+        console.log('Server closed.');
+        process.exit(0);
+    });
+
+    // Force close if it takes too long
+    setTimeout(() => {
+        console.error('Forcing shutdown...');
+        process.exit(1);
+    }, 1000);
+});
+
 server.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });

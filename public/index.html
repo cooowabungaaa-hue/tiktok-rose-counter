@@ -367,6 +367,12 @@
             </div>
         </div>
 
+        <div style="display: flex; justify-content: flex-end; width: 100%; margin-top: -1rem; margin-bottom: 1rem;">
+            <button id="quitBtn" style="background-color: #333; font-size: 0.8rem; padding: 8px 16px;">
+                <span>❌ QUIT APP</span>
+            </button>
+        </div>
+
         <div id="statusArea" style="text-align: center;">
             <span id="statusBadge" class="status-badge status-offline">OFFLINE</span>
             <div id="connectionTarget" style="margin-top: 10px; color: var(--text-dim); font-size: 0.9rem;">
@@ -443,44 +449,120 @@
         const downloadCsvBtn = document.getElementById('downloadCsvBtn');
         const copyForSheetsBtn = document.getElementById('copyForSheetsBtn');
 
+        // Create QUIT button dynamically or add to HTML. 
+        // Let's add it to the top right or near controls.
+        // Actually, let's just add it to the HTML first? 
+        // No, I can't edit HTML structure here easily without context of where to put it.
+        // Wait, I see "controls-row" in the previous file view around line 355.
+        // I'll add the button definition there in a separate edit, 
+        // and here I will add the logic.
+
+        // But I need the button element first. 
+        // Let's assume I will add <button id="quitBtn" ...> in HTML.
+        // So here I add the const and listener.
+
+        const quitBtn = document.getElementById('quitBtn');
+
+        quitBtn.addEventListener('click', () => {
+            if (confirm('Are you sure you want to quit the application?')) {
+                fetch('/shutdown')
+                    .then(response => response.text())
+                    .then(msg => {
+                        document.body.innerHTML = `
+                            <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; color:white; font-family:sans-serif;">
+                                <h1>${msg}</h1>
+                                <p>You can now close this tab.</p>
+                            </div>
+                        `;
+                    })
+                    .catch(err => {
+                        alert('Error shutting down: ' + err);
+                    });
+            }
+        });
+
         const connectionTarget = document.getElementById('connectionTarget');
 
         let isConnectState = true;
         let currentUniqueList = [];
 
+        let retryInterval = null;
+
         connectBtn.addEventListener('click', () => {
-            // ... existing connect logic ...
             if (isConnectState) {
+                // START Connection or Retry Loop
                 const username = usernameInput.value.trim().replace('@', '');
                 if (username) {
-                    socket.emit('connectToLive', username);
-                    statusBadge.textContent = 'CONNECTING...';
-                    statusBadge.className = 'status-badge status-offline';
-                    connectionTarget.innerHTML = `Connecting to <span style="color: var(--secondary);">@${username}</span>...`;
-                    connectionTarget.style.color = 'var(--text-dim)';
-                    connectionTarget.dataset.username = username;
 
-                    // Reset UI
-                    roseFeed.innerHTML = '';
-                    totalCountEl.textContent = '0';
-                    uniqueCountEl.textContent = '0';
-                    uniqueList.innerHTML = '';
-                    currentUniqueList = [];
+                    // UI: Enter "Connecting / Waiting" State
+                    connectBtn.innerHTML = '<span>STOP RETRYING</span>';
+                    connectBtn.style.backgroundColor = '#f44336'; // Red for stop
+                    isConnectState = false; // "Connected" state logic (to allow stopping)
 
-                    connectBtn.disabled = true;
+                    usernameInput.disabled = true;
 
-                    const goal = targetGoalInput.value;
-                    if (goal) {
-                        socket.emit('setTarget', goal);
-                    }
+                    // Initial Connection Attempt
+                    attemptConnection(username);
+
+                    // Start Retry Loop (in case initial fails)
+                    if (retryInterval) clearInterval(retryInterval);
+                    retryInterval = setInterval(() => {
+                        if (statusBadge.textContent !== 'CONNECTED') {
+                            attemptConnection(username);
+                        } else {
+                            // If connected, stop retrying
+                            clearInterval(retryInterval);
+                            retryInterval = null;
+                        }
+                    }, 5000); // Retry every 5 seconds
                 }
             } else {
-                // Disconnect logic
+                // STOP Connection or Retry Loop
+                if (retryInterval) {
+                    clearInterval(retryInterval);
+                    retryInterval = null;
+                }
+
                 socket.emit('disconnectFromLive');
-                connectBtn.disabled = true;
-                connectBtn.querySelector('span').textContent = 'DISCONNECTING...';
+
+                // Reset UI to Initial State
+                connectBtn.innerHTML = '<span>CONNECT</span>';
+                connectBtn.style.backgroundColor = 'var(--primary)';
+                connectBtn.disabled = false;
+                isConnectState = true;
+                usernameInput.disabled = false;
+
+                statusBadge.textContent = 'OFFLINE';
+                statusBadge.className = 'status-badge status-offline';
+                connectionTarget.textContent = 'Not Connected';
+                connectionTarget.style.color = 'var(--text-dim)';
             }
         });
+
+        function attemptConnection(username) {
+            statusBadge.textContent = 'WAITING...';
+            statusBadge.className = 'status-badge status-online'; // Reuse online style for pulse
+            statusBadge.style.backgroundColor = '#FFC107'; // Yellow for waiting
+            statusBadge.style.color = 'black';
+
+            connectionTarget.innerHTML = `Waiting for <span style="color: var(--secondary);">@${username}</span> to start...`;
+            connectionTarget.style.color = 'var(--text-dim)';
+
+            socket.emit('connectToLive', username);
+
+            // Goals
+            const goal = targetGoalInput.value;
+            if (goal) {
+                socket.emit('setTarget', goal);
+            }
+
+            // Client-side reset
+            roseFeed.innerHTML = '';
+            totalCountEl.textContent = '0';
+            uniqueCountEl.textContent = '0';
+            uniqueList.innerHTML = '';
+            currentUniqueList = [];
+        }
 
         setTargetBtn.addEventListener('click', () => {
             const goal = targetGoalInput.value;
@@ -567,41 +649,54 @@
         });
 
         socket.on('connectionStatus', (data) => {
-            connectBtn.disabled = false;
-
             if (data.status === 'connected') {
+                // Success!
+                if (retryInterval) {
+                    clearInterval(retryInterval);
+                    retryInterval = null;
+                }
+
                 isConnectState = false;
-                connectBtn.querySelector('span').textContent = 'DISCONNECT';
-                connectBtn.style.backgroundColor = '#f44336'; // Red for disconnect
+                connectBtn.innerHTML = '<span>DISCONNECT</span>';
+                connectBtn.style.backgroundColor = '#f44336';
 
                 statusBadge.textContent = 'CONNECTED';
                 statusBadge.className = 'status-badge status-online';
+                statusBadge.style.backgroundColor = '#4caf50';
+                statusBadge.style.color = 'white';
 
-                // Use stored username or data if available
-                // Note: The server sends roomId, we can use that to confirm connection
                 const connectedUser = usernameInput.value.trim().replace('@', '') || 'Unknown';
                 connectionTarget.innerHTML = `Connected to <span style="color: var(--secondary); font-weight: bold;">@${connectedUser}</span>`;
                 connectionTarget.style.color = 'var(--text)';
 
             } else if (data.status === 'error') {
-                isConnectState = true;
-                connectBtn.querySelector('span').textContent = 'CONNECT';
-                connectBtn.style.backgroundColor = 'var(--primary)'; // Reset color
-
-                statusBadge.textContent = 'ERROR';
-                statusBadge.className = 'status-badge status-error';
-                connectionTarget.textContent = 'Connection Failed';
-                connectionTarget.style.color = 'var(--text-dim)';
-                alert('Connection Error: ' + data.message);
+                // Keep retrying if in retry mode
+                console.log('Connection attempt failed: ' + data.message);
+                if (retryInterval) {
+                    // Update UI slightly to show we are still trying?
+                    // For now, "WAITING..." is sufficient.
+                } else {
+                    // If we are NOT in retry mode (manual single attempt?), show error
+                    // But our new logic always uses retryInterval for "Connect" action.
+                    // The only case it's null is if user stopped it.
+                }
 
             } else {
                 // Disconnected or Ended
+                if (retryInterval) {
+                    clearInterval(retryInterval);
+                    retryInterval = null;
+                }
+
                 isConnectState = true;
-                connectBtn.querySelector('span').textContent = 'CONNECT';
-                connectBtn.style.backgroundColor = 'var(--primary)'; // Reset color
+                connectBtn.innerHTML = '<span>CONNECT</span>';
+                connectBtn.style.backgroundColor = 'var(--primary)';
+                usernameInput.disabled = false;
 
                 statusBadge.textContent = data.status.toUpperCase();
                 statusBadge.className = 'status-badge status-offline';
+                statusBadge.style.backgroundColor = '#444';
+                statusBadge.style.color = '#ccc';
 
                 connectionTarget.textContent = 'Not Connected';
                 connectionTarget.style.color = 'var(--text-dim)';
@@ -609,7 +704,6 @@
         });
 
         socket.on('targetUpdated', (data) => {
-            // Re-render unique list
             if (data.uniqueGifterList) {
                 currentUniqueList = data.uniqueGifterList;
                 renderUniqueList(data.uniqueGifterList);
@@ -659,25 +753,6 @@
 
         function renderUniqueList(list) {
             uniqueList.innerHTML = '';
-            // Show in reverse order (newest top) or chronological? 
-            // Usually "List" implies 1, 2, 3... top to bottom.
-            // But for a feed, newest is top.
-            // User asked for "Sequential list" like "No. 300 : User". 
-            // Let's display it 300, 301, 302... top to bottom is logical for a "list", 
-            // but if it's long, you want to see the latest. 
-            // Let's do newest at top (reverse order in display) but keep numbers ascending.
-
-            // Actually, for a "Goal" list, seeing the filling up is cool. 
-            // Let's do Standard Order (Ascending) so 300 is top.
-            // But if we have 1000 users, we want to see the latest added...
-            // Let's stick to Ascending order (oldest top) for now as it's a "List". 
-            // Wait, "Feed" is usually newest top. "List" might be static. 
-            // Let's do Newest Top for now because scrolling to bottom is annoying.
-            // Or maybe Newest Top matches the Live Feed behavior.
-
-            // User said: "sequential list... fill up the username against the sequence number"
-            // Let's display in descending order of sequence number so the latest (highest number) is at top.
-
             const reversedList = [...list].reverse();
 
             reversedList.forEach(user => {
