@@ -62,10 +62,18 @@ if not exist "node_modules" (
 
 :: 4. Start Server
 echo [INFO] Starting application...
-node server.js
+echo [INFO] The black screen will close in a moment. 
+echo [INFO] The app will continue running in the background.
+
+powershell -Command "Start-Process node -ArgumentList 'server.js' -WindowStyle Hidden -WorkingDirectory '%~dp0'"
+
 if %errorlevel% neq 0 (
-    echo [ERROR] Server failed.
+    echo [ERROR] Server failed to start.
     pause
+    exit /b 1
 )
+
+echo [INFO] App started! Closing this window...
+timeout /t 2 >nul
 endlocal
-pause
+exit
