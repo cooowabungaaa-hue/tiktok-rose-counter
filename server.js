@@ -1,8 +1,4 @@
-const express = require('express');
-const http = require('http');
-const { Server } = require('socket.io');
-const { WebcastPushConnection } = require('tiktok-live-connector');
-const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const server = http.createServer(app);
@@ -13,6 +9,12 @@ const PORT = process.env.PORT || 3000;
 // Middleware to serve static files
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Ensure backup directory exists
+const backupDir = path.join(__dirname, 'backups');
+if (!fs.existsSync(backupDir)) {
+    fs.mkdirSync(backupDir);
+}
+
 let tiktokLiveConnection = null;
 let uniqueRoseGifters = new Set();
 let roseCount = 0;
@@ -20,9 +22,30 @@ let streakTracker = new Map();
 let processedMsgIds = new Set();
 let targetGoal = 100; // Default goal
 let uniqueGifterList = [];
+let lastConnectedUsername = null;
 
 let connectedClients = 0;
 let shutdownTimer = null;
+
+// Helper to append to CSV backup
+function appendToBackup(data) {
+    const date = new Date();
+    const filename = `backup_${lastConnectedUsername || 'unknown'}_${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}.csv`;
+    const filePath = path.join(backupDir, filename);
+
+    // Header if new file
+    if (!fs.existsSync(filePath)) {
+        fs.writeFileSync(filePath, 'Timestamp,Sequence,Nickname,UniqueId,GiftCount\n');
+    }
+
+    const timestamp = date.toISOString();
+    const line = `${timestamp},${data.sequenceNumber},"${data.nickname}",${data.uniqueId},1\n`; // Assuming 1 rose increment for unique list entry
+    // Actually, we should probably log every gift event, but for Unique List recovery, just logging new uniques is enough.
+    // Let's log new uniques.
+    fs.appendFile(filePath, line, (err) => {
+        if (err) console.error('Backup write error:', err);
+    });
+}
 
 io.on('connection', (socket) => {
     connectedClients++;
@@ -61,13 +84,8 @@ io.on('connection', (socket) => {
             }
             tiktokLiveConnection = null;
 
-            // Reset state global
-            uniqueRoseGifters.clear();
-            roseCount = 0;
-            streakTracker.clear();
-            processedMsgIds.clear();
-            uniqueGifterList = [];
-
+            // INTENTIONAL: Do NOT clear data here anymore.
+            // Persist data in memory until a NEW connection triggers a reset.
             io.emit('connectionStatus', { status: 'disconnected' });
         }
     });
@@ -82,13 +100,21 @@ io.on('connection', (socket) => {
                 console.error('Error disconnecting existing:', e);
             }
             tiktokLiveConnection = null;
+        }
 
+        // Only clear data if connecting to a DIFFERENT user
+        if (lastConnectedUsername !== tiktokUsername) {
+            console.log(`New user (${tiktokUsername}) detected. Resetting counters.`);
             uniqueRoseGifters.clear();
             roseCount = 0;
             streakTracker.clear();
             processedMsgIds.clear();
             uniqueGifterList = [];
+        } else {
+            console.log(`Reconnecting to same user (${tiktokUsername}). Preserving data.`);
         }
+
+        lastConnectedUsername = tiktokUsername;
 
         tiktokLiveConnection = new WebcastPushConnection(tiktokUsername);
 
@@ -112,6 +138,7 @@ io.on('connection', (socket) => {
                 }
 
                 const streakId = `${data.userId}_${data.giftId}`;
+
                 const currentRepeatCount = data.repeatCount;
                 const previousRepeatCount = streakTracker.get(streakId) || 0;
 
@@ -129,12 +156,16 @@ io.on('connection', (socket) => {
                     if (isNewUnique) {
                         uniqueRoseGifters.add(data.uniqueId);
                         const sequenceNumber = uniqueGifterList.length + 1;
-                        uniqueGifterList.push({
+                        const newEntry = {
                             sequenceNumber: sequenceNumber,
                             uniqueId: data.uniqueId,
                             nickname: data.nickname,
                             profilePictureUrl: data.profilePictureUrl
-                        });
+                        };
+                        uniqueGifterList.push(newEntry);
+
+                        // AUTO-BACKUP
+                        appendToBackup(newEntry);
                     }
 
                     streakTracker.set(streakId, currentRepeatCount);
