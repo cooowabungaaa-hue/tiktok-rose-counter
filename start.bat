@@ -1,6 +1,8 @@
 @echo off
-if "%1" == "h" goto begin
-mshta vbscript:createobject("wscript.shell").run("""%~nx0"" h",0)(window.close)&&exit
-:begin
+if "%1" == "min" goto run
+start "" /min "%~nx0" min
+exit
+
+:run
 cd /d %~dp0
 node server.js
