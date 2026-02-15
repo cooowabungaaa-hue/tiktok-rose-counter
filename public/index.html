@@ -486,83 +486,142 @@
         let isConnectState = true;
         let currentUniqueList = [];
 
-        let retryInterval = null;
+        let retryTimer = null;
+        let isWaitingMode = false;
 
         connectBtn.addEventListener('click', () => {
-            if (isConnectState) {
-                // START Connection or Retry Loop
+            if (!isWaitingMode && statusBadge.textContent !== 'CONNECTED') {
+                // START Connection logic
                 const username = usernameInput.value.trim().replace('@', '');
                 if (username) {
-
                     // UI: Enter "Connecting / Waiting" State
-                    connectBtn.innerHTML = '<span>STOP RETRYING</span>';
-                    connectBtn.style.backgroundColor = '#f44336'; // Red for stop
-                    isConnectState = false; // "Connected" state logic (to allow stopping)
+                    connectBtn.innerHTML = '<span>STOP</span>';
+                    connectBtn.style.backgroundColor = '#f44336';
 
                     usernameInput.disabled = true;
+                    isWaitingMode = true;
 
-                    // Initial Connection Attempt
                     attemptConnection(username);
-
-                    // Start Retry Loop (in case initial fails)
-                    if (retryInterval) clearInterval(retryInterval);
-                    retryInterval = setInterval(() => {
-                        if (statusBadge.textContent !== 'CONNECTED') {
-                            attemptConnection(username);
-                        } else {
-                            // If connected, stop retrying
-                            clearInterval(retryInterval);
-                            retryInterval = null;
-                        }
-                    }, 5000); // Retry every 5 seconds
                 }
             } else {
-                // STOP Connection or Retry Loop
-                if (retryInterval) {
-                    clearInterval(retryInterval);
-                    retryInterval = null;
+                // STOP Logic
+                isWaitingMode = false;
+                if (retryTimer) {
+                    clearTimeout(retryTimer);
+                    retryTimer = null;
                 }
 
                 socket.emit('disconnectFromLive');
 
-                // Reset UI to Initial State
+                // Reset UI
                 connectBtn.innerHTML = '<span>CONNECT</span>';
                 connectBtn.style.backgroundColor = 'var(--primary)';
                 connectBtn.disabled = false;
-                isConnectState = true;
                 usernameInput.disabled = false;
 
                 statusBadge.textContent = 'OFFLINE';
                 statusBadge.className = 'status-badge status-offline';
+                statusBadge.style.backgroundColor = '#444';
+                statusBadge.style.color = '#ccc';
+
                 connectionTarget.textContent = 'Not Connected';
                 connectionTarget.style.color = 'var(--text-dim)';
             }
         });
 
         function attemptConnection(username) {
-            statusBadge.textContent = 'WAITING...';
-            statusBadge.className = 'status-badge status-online'; // Reuse online style for pulse
-            statusBadge.style.backgroundColor = '#FFC107'; // Yellow for waiting
+            statusBadge.textContent = 'CONNECTING...';
+            statusBadge.className = 'status-badge status-online';
+            statusBadge.style.backgroundColor = '#FFC107';
             statusBadge.style.color = 'black';
 
-            connectionTarget.innerHTML = `Waiting for <span style="color: var(--secondary);">@${username}</span> to start...`;
-            connectionTarget.style.color = 'var(--text-dim)';
+            connectionTarget.innerHTML = `Connecting to <span style="color: var(--secondary);">@${username}</span>...`;
 
             socket.emit('connectToLive', username);
 
-            // Goals
+            // Send goals (only needed once really, but fine here)
             const goal = targetGoalInput.value;
-            if (goal) {
-                socket.emit('setTarget', goal);
+            if (goal) socket.emit('setTarget', goal);
+
+            // Client-side reset on fresh start? 
+            // Maybe not on every retry to preserve "seen" state if brief disconnect?
+            // For now, let's only reset if we are "clean". 
+            // But simplify: current behavior is reset on connectToLive call in server.
+
+            if (currentUniqueList.length > 0 && !retryTimer) {
+                // Only clear if this is a fresh manual click, not a retry
+                // logic handled by server mostly
+            }
+        }
+
+        socket.on('connectionStatus', (data) => {
+            // Clear any pending retry
+            if (retryTimer) {
+                clearTimeout(retryTimer);
+                retryTimer = null;
             }
 
-            // Client-side reset
-            roseFeed.innerHTML = '';
-            totalCountEl.textContent = '0';
-            uniqueCountEl.textContent = '0';
-            uniqueList.innerHTML = '';
-            currentUniqueList = [];
-        }
+            if (data.status === 'connected') {
+                // SUCCESS
+                statusBadge.textContent = 'CONNECTED';
+                statusBadge.className = 'status-badge status-online';
+                statusBadge.style.backgroundColor = '#4caf50';
+                statusBadge.style.color = 'white';
+
+                const connectedUser = usernameInput.value.trim().replace('@', '') || 'Unknown';
+                connectionTarget.innerHTML = `Connected to <span style="color: var(--secondary); font-weight: bold;">@${connectedUser}</span>`;
+
+                // Keep isWaitingMode = true so "STOP" button works (it means "Active Session")
+
+            } else if (data.status === 'error' || data.status === 'disconnected') {
+                // FAILURE / DISCONNECT
+                if (isWaitingMode) {
+                    // Retry mode active: Schedule retry
+                    console.log(`Connection lost/failed: ${data.message}. Retrying...`);
+
+                    statusBadge.textContent = 'WAITING...';
+                    statusBadge.style.backgroundColor = '#FF9800'; // Orange
+
+                    let reason = data.message || 'Unknown';
+                    if (reason.includes('User not found')) reason = 'Offline / Not Found';
+                    if (reason.includes('LIVE has ended')) reason = 'Stream Ended';
+
+                    connectionTarget.innerHTML = `<span style="color:#ff7777;">${reason}</span> <span style="font-size:0.8em; opacity:0.8;">Retrying in 5s...</span>`;
+
+                    // Schedule next attempt
+                    const username = usernameInput.value.trim().replace('@', '');
+                    retryTimer = setTimeout(() => {
+                        if (isWaitingMode) {
+                            attemptConnection(username);
+                        }
+                    }, 5000);
+
+                } else {
+                    // Manual stop or fatal error (shouldn't really happen if mode is off)
+                    statusBadge.textContent = 'ERROR';
+                    statusBadge.className = 'status-badge status-error';
+                    connectionTarget.textContent = data.message;
+
+                    // Reset UI controls
+                    connectBtn.innerHTML = '<span>CONNECT</span>';
+                    connectBtn.style.backgroundColor = 'var(--primary)';
+                    usernameInput.disabled = false;
+                }
+            } else if (data.status === 'ended') {
+                // Stream specifically ended
+                // Treat same as error/disconnect for auto-retry (maybe stream restarts?)
+                // Or stop? Usually users want to keep waiting.
+                // Let's reuse the retry logic above.
+                if (isWaitingMode) {
+                    statusBadge.textContent = 'ENDED';
+                    connectionTarget.innerHTML = `<span style="color:#ff7777;">Stream Ended</span> Retrying...`;
+                    const username = usernameInput.value.trim().replace('@', '');
+                    retryTimer = setTimeout(() => {
+                        if (isWaitingMode) attemptConnection(username);
+                    }, 5000);
+                }
+            }
+        });
 
         setTargetBtn.addEventListener('click', () => {
             const goal = targetGoalInput.value;
