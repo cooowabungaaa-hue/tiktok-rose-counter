@@ -21,8 +21,19 @@ let processedMsgIds = new Set();
 let targetGoal = 100; // Default goal
 let uniqueGifterList = [];
 
+let connectedClients = 0;
+let shutdownTimer = null;
+
 io.on('connection', (socket) => {
-    console.log('Client connected');
+    connectedClients++;
+    console.log(`Client connected. Total: ${connectedClients}`);
+
+    // Cancel shutdown timer if a new client connects
+    if (shutdownTimer) {
+        console.log('Shutdown cancelled because a client reconnected.');
+        clearTimeout(shutdownTimer);
+        shutdownTimer = null;
+    }
 
     socket.on('setTarget', (goalNumber) => {
         const num = parseInt(goalNumber, 10);
@@ -34,7 +45,7 @@ io.on('connection', (socket) => {
 
     socket.on('disconnectFromLive', () => {
         if (tiktokLiveConnection) {
-            console.log('Client requested disconnect');
+            console.log('Client requested disconnect from TikTok Live');
             try {
                 tiktokLiveConnection.disconnect();
             } catch (e) {
@@ -140,10 +151,6 @@ io.on('connection', (socket) => {
             }
         });
 
-        tiktokLiveConnection.on('chat', (data) => {
-            // console.log(`${data.uniqueId}: ${data.comment}`);
-        });
-
         tiktokLiveConnection.on('disconnected', () => {
             console.log('TikTok Live disconnected event');
             io.emit('connectionStatus', { status: 'disconnected' });
@@ -156,7 +163,19 @@ io.on('connection', (socket) => {
     });
 
     socket.on('disconnect', () => {
-        console.log('Client disconnected');
+        connectedClients--;
+        console.log(`Client disconnected. Remaining: ${connectedClients}`);
+
+        // If no clients remain, start shutdown timer (wait 10 seconds for potential refresh)
+        if (connectedClients <= 0) {
+            console.log('No clients connected. Starting shutdown timer (10s)...');
+            shutdownTimer = setTimeout(() => {
+                if (connectedClients <= 0) {
+                    console.log('Shutting down due to no active connections.');
+                    process.exit(0);
+                }
+            }, 10000);
+        }
     });
 });
 
