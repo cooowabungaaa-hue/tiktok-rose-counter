@@ -1,6 +1,6 @@
 @echo off
 echo ---------------------------------------------------
-echo 🐛 Debug Mode - TikTok Rose Counter
+echo Debug Mode - TikTok Rose Counter
 echo ---------------------------------------------------
 echo.
 echo Starting server...

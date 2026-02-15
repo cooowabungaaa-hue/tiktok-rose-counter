@@ -6,17 +6,16 @@ echo.
 echo Downloading the latest version from GitHub...
 echo.
 
-:: Try using curl first (faster)
 curl -L -o update.zip "https://github.com/cooowabungaaa-hue/tiktok-rose-counter/archive/refs/heads/main.zip"
 
-:: If curl failed (errorlevel not 0), try PowerShell as fallback
 if %errorlevel% neq 0 (
-    echo curl not found or failed, trying PowerShell...
+    echo curl failed, trying PowerShell...
     powershell -Command "$ProgressPreference = 'SilentlyContinue'; Invoke-WebRequest -Uri 'https://github.com/cooowabungaaa-hue/tiktok-rose-counter/archive/refs/heads/main.zip' -OutFile 'update.zip'"
 )
 
 if not exist update.zip (
-    echo [ERROR] Download failed. Please check your internet connection.
+    echo [ERROR] Download failed.
+    echo Please check your internet connection.
     pause
     exit /b
 )
