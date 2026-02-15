@@ -352,51 +352,53 @@
     <h1>ROSE COUNTER</h1>
 
     <div class="container">
-        <div class="controls-row" style="align-items: stretch;">
+        <div class="controls-row"
+            style="display: grid; grid-template-columns: 1.5fr 1fr 0.6fr; gap: 1rem; align-items: stretch;">
             <!-- Box 1: Account -->
-            <div class="input-group" style="flex: 1.5; padding: 16px 20px;">
-                <div style="display: flex; flex-direction: column; gap: 12px; flex: 1;">
-                    <div style="display: flex; gap: 8px; align-items: center;">
-                        <input type="text" id="username" placeholder="TikTok Username" spellcheck="false"
-                            style="padding: 10px 14px; flex: 1;">
-                        <button id="connectBtn"
-                            style="height: 42px; min-width: 100px; justify-content: center;"><span>CONNECT</span></button>
-                    </div>
-                    <div id="statusArea" style="display: flex; align-items: center; gap: 10px; font-size: 0.8rem;">
-                        <span id="statusBadge" class="status-badge status-offline">OFFLINE</span>
-                        <div id="connectionTarget"
-                            style="color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                            Not Connected</div>
-                    </div>
+            <div class="input-group"
+                style="padding: 16px 20px; display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <input type="text" id="username" placeholder="TikTok Username" spellcheck="false"
+                        style="padding: 10px 14px; flex: 1;">
+                    <button id="connectBtn"
+                        style="height: 42px; min-width: 100px; justify-content: center;"><span>CONNECT</span></button>
+                </div>
+                <div id="statusArea"
+                    style="display: flex; align-items: center; gap: 10px; font-size: 0.8rem; height: 20px;">
+                    <span id="statusBadge" class="status-badge status-offline">OFFLINE</span>
+                    <div id="connectionTarget"
+                        style="color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        Not Connected</div>
                 </div>
             </div>
 
             <!-- Box 2: Goal -->
-            <div class="input-group" style="flex: 1; padding: 16px 20px; min-width: 250px;">
-                <div style="display: flex; flex-direction: column; gap: 12px; flex: 1;">
-                    <div style="display: flex; gap: 8px; align-items: center;">
-                        <input type="number" id="targetGoal" placeholder="Goal" value="100"
-                            style="padding: 10px 14px; flex: 1;">
-                        <button id="setTargetBtn" class="secondary-btn"
-                            style="height: 42px; min-width: 100px; justify-content: center;"><span>SET
-                                GOAL</span></button>
-                    </div>
-                    <div style="font-size: 0.8rem; color: var(--text-dim);">
-                        <span style="opacity: 0.7;">Target Settings</span>
-                    </div>
+            <div class="input-group"
+                style="padding: 16px 20px; display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <input type="number" id="targetGoal" placeholder="Goal" value="100"
+                        style="padding: 10px 14px; flex: 1;">
+                    <button id="setTargetBtn" class="secondary-btn"
+                        style="height: 42px; min-width: 100px; justify-content: center;"><span>SET GOAL</span></button>
+                </div>
+                <div
+                    style="font-size: 0.8rem; color: var(--text-dim); height: 20px; display: flex; align-items: center;">
+                    <span style="opacity: 0.7;">Target Settings</span>
                 </div>
             </div>
 
             <!-- Box 3: Quit -->
-            <div class="input-group" style="flex: 0.6; padding: 16px 20px; min-width: 150px;">
-                <div style="display: flex; flex-direction: column; gap: 12px; flex: 1; justify-content: center;">
+            <div class="input-group"
+                style="padding: 16px 20px; display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
+                <div style="display: flex; align-items: center; justify-content: center;">
                     <button id="quitBtn"
                         style="background-color: #333; font-size: 0.8rem; height: 42px; justify-content: center; width: 100%;">
                         <span>❌ QUIT APP</span>
                     </button>
-                    <div style="font-size: 0.8rem; color: var(--text-dim); text-align: center;">
-                        <span style="opacity: 0.7;">Close Session</span>
-                    </div>
+                </div>
+                <div
+                    style="font-size: 0.8rem; color: var(--text-dim); text-align: center; height: 20px; display: flex; align-items: center; justify-content: center;">
+                    <span style="opacity: 0.7;">Close Session</span>
                 </div>
             </div>
         </div>
