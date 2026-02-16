@@ -615,7 +615,7 @@
                     console.log(`Connection lost/failed: ${data.message}. Retrying...`);
 
                     let reason = data.message || 'Unknown';
-                    let badgeText = 'WAITING...';
+                    let badgeText = 'RETRYING...';
                     let badgeColor = '#FF9800'; // Orange
 
                     if (reason.includes('User not found')) {
