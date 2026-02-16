@@ -649,8 +649,8 @@
                 } else {
                     // Manual stop or initial error (not retrying)
                     let reason = data.message || 'Unknown';
-                    let badgeText = 'ERROR';
-                    let badgeColor = '#f44336'; // Red
+                    let badgeText = 'DISCONNECTED';
+                    let badgeColor = '#9E9E9E'; // Grey (Neutral) instead of Red
 
                     if (reason.includes('User not found')) {
                         reason = 'User Offline';
@@ -666,7 +666,8 @@
                     statusBadge.textContent = badgeText;
                     statusBadge.style.backgroundColor = badgeColor;
 
-                    const textColor = (badgeText === 'OFFLINE' || badgeText === 'ENDED') ? 'var(--text-dim)' : '#ff7777';
+                    // Always use neutral color for message text
+                    const textColor = 'var(--text-dim)';
                     connectionTarget.innerHTML = `<span style="color:${textColor};">${reason}</span>`;
 
                     // Reset UI controls
