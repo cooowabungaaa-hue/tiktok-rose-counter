@@ -647,10 +647,27 @@
                     }, 5000);
 
                 } else {
-                    // Manual stop or fatal error (shouldn't really happen if mode is off)
-                    statusBadge.textContent = 'ERROR';
-                    statusBadge.className = 'status-badge status-error';
-                    connectionTarget.textContent = data.message;
+                    // Manual stop or initial error (not retrying)
+                    let reason = data.message || 'Unknown';
+                    let badgeText = 'ERROR';
+                    let badgeColor = '#f44336'; // Red
+
+                    if (reason.includes('User not found')) {
+                        reason = 'User Offline';
+                        badgeText = 'OFFLINE';
+                        badgeColor = '#9E9E9E'; // Grey (Neutral)
+                    }
+                    if (reason.includes('LIVE has ended')) {
+                        reason = 'Stream Ended';
+                        badgeText = 'ENDED';
+                        badgeColor = '#9E9E9E'; // Grey (Neutral)
+                    }
+
+                    statusBadge.textContent = badgeText;
+                    statusBadge.style.backgroundColor = badgeColor;
+
+                    const textColor = (badgeText === 'OFFLINE' || badgeText === 'ENDED') ? 'var(--text-dim)' : '#ff7777';
+                    connectionTarget.innerHTML = `<span style="color:${textColor};">${reason}</span>`;
 
                     // Reset UI controls
                     connectBtn.innerHTML = '<span>CONNECT</span>';
