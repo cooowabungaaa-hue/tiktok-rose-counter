@@ -614,12 +614,23 @@
                     // Retry mode active: Schedule retry
                     console.log(`Connection lost/failed: ${data.message}. Retrying...`);
 
-                    statusBadge.textContent = 'WAITING...';
-                    statusBadge.style.backgroundColor = '#FF9800'; // Orange
-
                     let reason = data.message || 'Unknown';
-                    if (reason.includes('User not found')) reason = 'Offline / Not Found';
-                    if (reason.includes('LIVE has ended')) reason = 'Stream Ended';
+                    let badgeText = 'WAITING...';
+                    let badgeColor = '#FF9800'; // Orange
+
+                    if (reason.includes('User not found')) {
+                        reason = 'User Offline';
+                        badgeText = 'OFFLINE';
+                        badgeColor = '#F44336'; // Red
+                    }
+                    if (reason.includes('LIVE has ended')) {
+                        reason = 'Stream Ended';
+                        badgeText = 'ENDED';
+                        badgeColor = '#9E9E9E'; // Grey
+                    }
+
+                    statusBadge.textContent = badgeText;
+                    statusBadge.style.backgroundColor = badgeColor;
 
                     connectionTarget.innerHTML = `<span style="color:#ff7777;">${reason}</span> <span style="font-size:0.8em; opacity:0.8;">Retrying in 5s...</span>`;
 
