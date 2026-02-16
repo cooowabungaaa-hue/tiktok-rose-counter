@@ -615,8 +615,10 @@
                     console.log(`Connection lost/failed: ${data.message}. Retrying...`);
 
                     let reason = data.message || 'Unknown';
+                    // Sanitize "Error" word
+                    reason = reason.replace(/Error:?/gi, '').trim();
                     let badgeText = 'RETRYING...';
-                    let badgeColor = '#FF9800'; // Orange
+                    let badgeColor = '#607D8B'; // Blue Grey (Neutral) instead of Orange
 
                     if (reason.includes('User not found')) {
                         reason = 'User Offline';
@@ -633,8 +635,8 @@
                     statusBadge.style.backgroundColor = badgeColor;
 
                     // Offline/Ended is neutral, Error/Retry is alert color
-                    const isNeutral = (badgeText === 'OFFLINE' || badgeText === 'ENDED');
-                    const msgColor = isNeutral ? 'var(--text-dim)' : '#ff7777';
+                    // FORCE NEUTRAL
+                    const msgColor = 'var(--text-dim)';
 
                     connectionTarget.innerHTML = `<span style="color:${msgColor};">${reason}</span> <span style="font-size:0.8em; opacity:0.8;">Retrying in 5s...</span>`;
 
@@ -649,6 +651,7 @@
                 } else {
                     // Manual stop or initial error (not retrying)
                     let reason = data.message || 'Unknown';
+                    reason = reason.replace(/Error:?/gi, '').trim();
                     let badgeText = 'DISCONNECTED';
                     let badgeColor = '#9E9E9E'; // Grey (Neutral) instead of Red
 
@@ -682,7 +685,7 @@
                 // Let's reuse the retry logic above.
                 if (isWaitingMode) {
                     statusBadge.textContent = 'ENDED';
-                    connectionTarget.innerHTML = `<span style="color:#ff7777;">Stream Ended</span> Retrying...`;
+                    connectionTarget.innerHTML = `<span style="color:var(--text-dim);">Stream Ended</span> <span style="font-size:0.8em; opacity:0.8;">Retrying...</span>`;
                     const username = usernameInput.value.trim().replace('@', '');
                     retryTimer = setTimeout(() => {
                         if (isWaitingMode) attemptConnection(username);
