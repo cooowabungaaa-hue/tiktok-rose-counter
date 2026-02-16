@@ -621,7 +621,7 @@
                     if (reason.includes('User not found')) {
                         reason = 'User Offline';
                         badgeText = 'OFFLINE';
-                        badgeColor = '#F44336'; // Red
+                        badgeColor = '#9E9E9E'; // Grey (Neutral)
                     }
                     if (reason.includes('LIVE has ended')) {
                         reason = 'Stream Ended';
@@ -632,7 +632,11 @@
                     statusBadge.textContent = badgeText;
                     statusBadge.style.backgroundColor = badgeColor;
 
-                    connectionTarget.innerHTML = `<span style="color:#ff7777;">${reason}</span> <span style="font-size:0.8em; opacity:0.8;">Retrying in 5s...</span>`;
+                    // Offline/Ended is neutral, Error/Retry is alert color
+                    const isNeutral = (badgeText === 'OFFLINE' || badgeText === 'ENDED');
+                    const msgColor = isNeutral ? 'var(--text-dim)' : '#ff7777';
+
+                    connectionTarget.innerHTML = `<span style="color:${msgColor};">${reason}</span> <span style="font-size:0.8em; opacity:0.8;">Retrying in 5s...</span>`;
 
                     // Schedule next attempt
                     const username = usernameInput.value.trim().replace('@', '');
