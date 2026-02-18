@@ -98,6 +98,11 @@ io.on('connection', (socket) => {
         io.emit('targetUpdated', { targetGoal, uniqueGifterList: [] });
     });
 
+    socket.on('setTarget', (goal) => {
+        targetGoal = parseInt(goal, 10) || 100;
+        io.emit('targetUpdated', { targetGoal, uniqueGifterList });
+    });
+
     // Send current state to newly connected client
     socket.emit('currentState', {
         uniqueCount: uniqueRoseGifters.size,
